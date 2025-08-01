@@ -1,4 +1,9 @@
 # EasyOrder
-dsfgdsfg
 
-commit para conflitar (thiago)
+Repo de testes para acesso dos alunos de ADS - DevOps e Integração Contínua!
+
+Oá Mundo!! :)
+
+boa noite guilherme!
+
+Olá turma de ADS!

@@ -2,7 +2,8 @@
   "name": "EasyOrder Dev Container",
   "build": {
     "dockerfile": "../Dockerfile",
-    "context": ".."
+    "context": "..",
+    "target": "dev"
   },
   "workspaceFolder": "/workspaces/EasyOrder",
   "remoteUser": "vscode",

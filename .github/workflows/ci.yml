@@ -7,18 +7,20 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build-test:
+  test:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+      - name: Build Docker image (Prod stage)
+        run: docker build -t easyorder --target prod .
 
-      - name: Build Docker Image
-        run: docker build -t easyorder-api .
-
-      - name: Run Tests inside container
-        run: docker run --rm easyorder-api pytest
+      - name: Run tests inside prod container
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}/tests:/app/tests" \
+            -v "${{ github.workspace }}/pytest.ini:/app/pytest.ini" \
+            -e PYTHONPATH=/app \
+            easyorder pytest tests -v --disable-warnings --maxfail=1

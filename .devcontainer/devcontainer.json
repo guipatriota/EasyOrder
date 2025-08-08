@@ -6,6 +6,7 @@
   },
   "workspaceFolder": "/workspaces/EasyOrder",
   "remoteUser": "vscode",
+  "forwardPorts": [8000],
   "runArgs": ["--init"],
   "overrideCommand": false,
   "features": {

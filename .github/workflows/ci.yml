@@ -1,0 +1,26 @@
+name: EasyOrder CI
+
+on:
+  push:
+    branches: [ "main", "develop", "develop/container-avançado" ]
+  pull_request:
+    branches: [ "main", "develop", "develop/container-avançado" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Build Docker image (Prod stage)
+        run: docker build -t easyorder --target prod .
+
+      - name: Run tests inside prod container
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}/tests:/app/tests" \
+            -v "${{ github.workspace }}/pytest.ini:/app/pytest.ini" \
+            -e PYTHONPATH=/app \
+            easyorder pytest tests -v --disable-warnings --maxfail=1

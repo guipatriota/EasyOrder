@@ -2,25 +2,68 @@ name: EasyOrder CI
 
 on:
   push:
-    branches: [ "main", "develop", "develop/container-avançado" ]
+    branches: [ "main", "develop", "develop/**" ]
   pull_request:
-    branches: [ "main", "develop", "develop/container-avançado" ]
+    branches: [ "main", "develop", "develop/**" ]
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install libs and lint tools
+        run: |
+          pip install -r --no-cache-dir requirements-dev.txt
+
+      - name: Black check
+        run: black --check .
+
+      - name: isort check
+        run: isort --check-only .
+
+      - name: Flake8 check
+        run: flake8 .
+
+      - name: Docstring check
+        run: python tools/check_docstrings_length.py
+
   test:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Build Docker image (Prod stage)
-        run: docker build -t easyorder --target prod .
+      - name: Build Docker image (Test stage = Prod mais libs de teste)
+        run: docker build -t easyorder:test --target test .
 
-      - name: Run tests inside prod container
+      - name: Pre-commit (CI)
+        uses: pre-commit/action@v3.0.1
+
+      - name: Run tests with coverage inside test container
         run: |
           docker run --rm \
             -v "${{ github.workspace }}/tests:/app/tests" \
             -v "${{ github.workspace }}/pytest.ini:/app/pytest.ini" \
             -e PYTHONPATH=/app \
-            easyorder pytest tests -v --disable-warnings --maxfail=1
+            easyorder:test pytest tests \
+              -v --disable-warnings --maxfail=1 \
+              --cov=src --cov-branch \
+              --cov-report=term-missing \
+              --cov-report=xml \
+              --cov-fail-under=75
+
+      - name: Upload coverage.xml
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: coverage.xml

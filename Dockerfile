@@ -14,7 +14,9 @@ WORKDIR /workspaces/EasyOrder
 
 # Instala dependências
 COPY requirements.txt requirements-dev.txt ./
-RUN pip install --no-cache-dir -r requirements-dev.txt
+RUN pip install --no-cache-dir -r requirements-dev.txt \
+    && pre-commit install \
+    && pre-commit install --hook-type pre-push
 
 # Copia o código
 COPY . .
@@ -52,9 +54,8 @@ CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
 # ---------------------------
 FROM prod AS test
 
-COPY . .
+COPY requirements.txt requirements-dev.txt ./
 
-RUN pip install -r requirements-dev.txt
-
-
-
+RUN pip install -r requirements-dev.txt\
+    && pre-commit install \
+    && pre-commit install --hook-type pre-push

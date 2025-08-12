@@ -54,8 +54,9 @@ CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
 # ---------------------------
 FROM prod AS test
 
-COPY requirements-dev.txt .
+COPY . .
 
 RUN pip install -r requirements-dev.txt\
     && pre-commit install \
+
     && pre-commit install --hook-type pre-push

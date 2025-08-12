@@ -1,16 +1,38 @@
+"""Testes de integração para a API EasyOrder.
+
+Verifica o fluxo completo de criação, consulta, atualização de status e exclusão
+de pedidos por meio dos endpoints públicos.
+"""
+
 from fastapi.testclient import TestClient
+
 from src.main import app
 
 client = TestClient(app)
 
+
 def test_criar_obter_atualizar_deletar_ordem():
+    """Executa o fluxo end-to-end de pedidos.
+
+    Passos:
+    - Cria um pedido.
+    - Consulta o pedido criado.
+    - Atualiza o status do pedido.
+    - Deleta o pedido.
+    - Verifica que o pedido foi removido.
+    """
     # 1. Criar uma nova ordem
     nova_ordem = {
         "id": 10,
         "customer_name": "Maria",
         "items": [
-            {"product_id": 1, "product_name": "Caderno", "quantity": 2, "price": 10.0}
-        ]
+            {
+                "product_id": 1,
+                "product_name": "Caderno",
+                "quantity": 2,
+                "price": 10.0,
+            }
+        ],
     }
     response_post = client.post("/orders", json=nova_ordem)
     assert response_post.status_code == 200

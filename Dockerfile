@@ -58,6 +58,6 @@ COPY . .
 
 RUN pip install -r requirements-dev.txt \
     && pre-commit install \
-
     && pre-commit install --hook-type pre-push
+
 

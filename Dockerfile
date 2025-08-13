@@ -56,8 +56,7 @@ FROM prod AS test
 
 COPY . .
 
-RUN pip install -r requirements-dev.txt \
-    && pre-commit install \
-    && pre-commit install --hook-type pre-push
+RUN pip install -r requirements-dev.txt
+
 
 

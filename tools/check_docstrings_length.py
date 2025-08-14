@@ -1,21 +1,23 @@
 """Verificador de tamanho de docstrings para o projeto EasyOrder.
 
 Percorre arquivos Python em 'src/' e 'tests/' e garante que a primeira linha
-das docstrings tenha pelo menos MIN caracteres. Pode ser executado via CLI.
+das docstrings tenha pelo menos MIN_DOCSTRING_LENGTH_DEFAULT caracteres.
+Pode ser executado via CLI.
 """
 
 import ast
 import sys
 from pathlib import Path
 
-MIN = 15  # tamanho mínimo da 1ª linha da docstring
+MIN_DOCSTRING_LENGTH_DEFAULT = 15  # tamanho mínimo da 1ª linha da docstring
 
 
 def check_file(path: Path) -> list[str]:
     """Verifica docstrings de um arquivo Python específico.
 
     Analisa o AST do arquivo e valida se as docstrings do módulo, classes e
-    funções possuem a primeira linha com pelo menos MIN caracteres.
+    funções possuem a primeira linha com pelo menos MIN_DOCSTRING_LENGTH_DEFAULT
+    caracteres.
 
     Args:
         path (Path): Caminho do arquivo Python a ser verificado.
@@ -32,9 +34,13 @@ def check_file(path: Path) -> list[str]:
 
     # módulo
     mod_doc = ast.get_docstring(tree, clean=True)
-    if not mod_doc or len(mod_doc.splitlines()[0]) < MIN:
+    if (
+        not mod_doc
+        or len(mod_doc.splitlines()[0]) < MIN_DOCSTRING_LENGTH_DEFAULT
+    ):
         errs.append(
-            f"{path}: docstring de módulo ausente ou 1ª linha < {MIN} chars"
+            f"{path}: docstring de módulo ausente ou 1ª linha < "
+            + f"{MIN_DOCSTRING_LENGTH_DEFAULT} chars"
         )
 
     # classes e defs
@@ -48,10 +54,14 @@ def check_file(path: Path) -> list[str]:
                 if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
                 else "classe"
             )
-            if not doc or len(doc.splitlines()[0]) < MIN:
+            if (
+                not doc
+                or len(doc.splitlines()[0]) < MIN_DOCSTRING_LENGTH_DEFAULT
+            ):
                 errs.append(
                     f"{path}:{node.lineno} {kind} '{node.name}': "
-                    + f"docstring ausente ou 1ª linha < {MIN} chars"
+                    + "docstring ausente ou 1ª linha < "
+                    + f"{MIN_DOCSTRING_LENGTH_DEFAULT} chars"
                 )
     return errs
 

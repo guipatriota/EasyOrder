@@ -67,4 +67,6 @@ jobs:
         with:
           name: coverage-xml
 
+          name: coverage-xml-${{ github.run_id }}
+
           path: coverage.xml

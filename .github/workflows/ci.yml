@@ -50,20 +50,22 @@ jobs:
 
       - name: Run tests with coverage inside test container
         run: |
+          mkdir -p "${{ github.workspace }}/reports/coverage"
           docker run --rm \
             -v "${{ github.workspace }}/tests:/app/tests" \
             -v "${{ github.workspace }}/pytest.ini:/app/pytest.ini" \
+            -v "${{ github.workspace }}/reports/coverage:/out" \
             -e PYTHONPATH=/app \
             easyorder:test pytest tests \
               -v --disable-warnings --maxfail=1 \
               --cov=src --cov-branch \
               --cov-report=term-missing \
-              --cov-report=xml \
+              --cov-report=xml:/out/coverage.xml \
               --cov-fail-under=75
 
       - name: Upload coverage.xml
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-xml
-          path: coverage.xml
+          name: coverage-xml-${{ github.run_id }}
+          path: reports/coverage/coverage.xml

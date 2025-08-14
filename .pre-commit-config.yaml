@@ -1,0 +1,63 @@
+repos:
+  # Formatador: Black
+  - repo: https://github.com/psf/black
+    rev: 24.4.2
+    hooks:
+      - id: black
+        language_version: python3.12
+
+  # Organizacao de imports: isort (alinhado com Black)
+  - repo: https://github.com/pycqa/isort
+    rev: 6.0.1
+    hooks:
+      - id: isort
+        args: ["--profile", "black"]
+        language_version: python3.12
+
+  # Lint: Flake8
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.0.0
+    hooks:
+      - id: flake8
+        additional_dependencies:
+          - flake8-bugbear
+          - flake8-comprehensions
+          - pep8-naming
+          - flake8-docstrings
+        language_version: python3.12
+
+  # Seu verificador de docstrings
+  - repo: local
+    hooks:
+      - id: check-docstrings-length
+        name: Check docstrings length
+        entry: python tools/check_docstrings_length.py
+        language: system
+        files: ^(src/|tests/).*\.(py)$
+        stages: [pre-commit]
+
+  # Testes com cobertura (mais pesado) - só no pre-push
+  - repo: local
+    hooks:
+      - id: pytest
+        name: Run pytest with coverage (pre-push)
+        entry: pytest
+        language: system
+        args:
+          - "--maxfail=1"
+          - "--disable-warnings"
+          - "--cov=src"
+          - "--cov-branch"
+          - "--cov-report=term-missing"
+          - "--cov-fail-under=75"
+        pass_filenames: false
+        stages: [pre-push]
+        exclude: |
+          ^Dockerfile$|
+          ^README\.md$|
+          ^\.gitignore$|
+          ^LICENSE$|
+          ^\.dockerignore$|
+          ^\.devcontainer/devcontainer\.json$|
+          ^docs/screenshots/home\.jpg$|
+          ^\.github/workflows/ci\.yml$

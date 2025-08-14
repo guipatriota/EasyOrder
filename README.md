@@ -165,6 +165,7 @@ pre-commit run --all-files
 ---
 
 ## 📖 Documentação
+**Link da Doc**: [https://guipatriota.github.io/EasyOrder/](https://guipatriota.github.io/EasyOrder/)
 1. Para abrir servidor da documentação:
 ```
 python -m http.server 8001 --directory docs/_build/html
@@ -198,3 +199,4 @@ Para contribuir:
 
 ## 📄 Licença
 Este projeto está licenciado sob a [MIT License](LICENSE).
+

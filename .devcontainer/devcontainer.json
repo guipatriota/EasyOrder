@@ -15,7 +15,8 @@
     "ghcr.io/devcontainers/features/git:1": {},
     "ghcr.io/devcontainers/features/github-cli:1": {}
   },
-  "postCreateCommand": "pre-commit install && pre-commit install --hook-type pre-push && pre-commit run --all-files",
+  
+  "postCreateCommand": "git config --global --add safe.directory /workspaces/EasyOrder && pre-commit install -f && pre-commit install --hook-type pre-push -f && pre-commit run --all-files || true",
   "customizations": {
     "vscode": {
       "settings": {

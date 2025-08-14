@@ -65,8 +65,5 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-xml
-
           name: coverage-xml-${{ github.run_id }}
-
           path: coverage.xml

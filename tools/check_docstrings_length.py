@@ -11,7 +11,12 @@ from pathlib import Path
 MIN = 15  # tamanho mínimo da 1ª linha da docstring
 
 
-def check_file(path: Path) -> list[str]:
+import argparse
+
+MIN_DOCSTRING_LENGTH_DEFAULT = 15  # tamanho mínimo da 1ª linha da docstring
+
+
+def check_file(path: Path, min_docstring_length: int) -> list[str]:
     """Verifica docstrings de um arquivo Python específico.
 
     Analisa o AST do arquivo e valida se as docstrings do módulo, classes e

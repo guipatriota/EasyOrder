@@ -19,6 +19,7 @@
 - [CI/CD](#-cicd)
 - [Pre-commit](#-pre-commit)
 - [Deploy](#-deploy)
+- [Documentação](#-documentação)
 - [Capturas de Tela](#-capturas-de-tela)
 - [Contribuindo](#-contribuindo)
 - [Licença](#-licença)
@@ -161,6 +162,21 @@ pre-commit run --all-files
 
 ## 🌐 Deploy
 **Link de Deploy**: [https://easyorder.example.com](https://easyorder.example.com)
+---
+
+## 📖 Documentação
+1. Para abrir servidor da documentação:
+```
+python -m http.server 8001 --directory docs/_build/html
+```
+
+2. Para compilar documentação atualizada:
+```
+pip install -r docs/requirements-docs.txt
+pip install -e .
+python -m sphinx.ext.apidoc -f -o docs/api src
+sphinx-build -b html docs docs/_build/html 
+```
 ---
 
 ## 🖼 Captura de Tela

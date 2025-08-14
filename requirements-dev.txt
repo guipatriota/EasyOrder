@@ -1,0 +1,11 @@
+-r requirements.txt
+pytest
+pytest-cov
+pre-commit
+httpx
+black
+flake8
+flake8-bugbear
+pep8-naming
+flake8-docstrings
+isort

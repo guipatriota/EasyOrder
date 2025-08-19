@@ -5,9 +5,11 @@ FROM python:3.12-slim AS dev
 
 # Instalar pacotes úteis para desenvolvimento
 RUN apt-get update && apt-get install -y \
-    git zsh sudo curl vim \
+    git zsh sudo curl vim nodejs npm \
     && useradd -ms /bin/zsh vscode \
     && echo "vscode ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers \
+    && npm install -g aws-cdk@2 \
+    && cdk --version \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /workspaces/EasyOrder

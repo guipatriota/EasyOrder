@@ -2,12 +2,12 @@
 
 import os
 
-import aws_cdk as cdk
+from aws_cdk import App, Environment, LegacyStackSynthesizer
 from easyorder_stack import EasyOrderStack
 
-app = cdk.App()
+app = App()
 image_tag = app.node.try_get_context("imageTag") or "latest"
-env = cdk.Environment(
+env = Environment(
     account=os.environ.get("CDK_DEFAULT_ACCOUNT"),  # Uso do OIDC
     region=os.environ.get("CDK_DEFAULT_REGION"),
 )
@@ -17,6 +17,7 @@ EasyOrderStack(
     "EasyOrderStack",  # O mesmo configurado em github secrets CDK_STACK_NAME
     image_tag=image_tag,
     env=env,
+    synthesizer=LegacyStackSynthesizer(),
 )
 
 app.synth()

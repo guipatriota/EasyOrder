@@ -43,6 +43,7 @@ class EasyOrderStack(Stack):
                     cidr_mask=24,
                 )
             ],
+            restrict_default_security_group=False,
         )
 
         # ec2_teste = ec2.Instance(self, "Ec2Teste",
@@ -93,3 +94,5 @@ class EasyOrderStack(Stack):
         scalable.scale_on_cpu_utilization(
             "CpuScaling", target_utilization_percent=60
         )
+        svc.service.minimum_healthy_percent = 100
+        svc.service.maximum_percent = 200

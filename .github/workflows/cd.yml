@@ -1,6 +1,7 @@
 name: EasyOrder CD (ECR + ECS Fargate via CDK)
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - 'v*.*.*'

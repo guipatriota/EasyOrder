@@ -1,12 +1,14 @@
 """Configuração da Stack para a infra com AWS CDK."""
 
 from aws_cdk import (
+    RemovalPolicy,
     Stack,
 )
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecr as ecr
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_ecs_patterns as ecs_patterns
+from aws_cdk import aws_logs as logs
 from constructs import Construct
 
 
@@ -19,8 +21,29 @@ class EasyOrderStack(Stack):
         """Inicializa a stack da aplicação EasyOrder."""
         super().__init__(scope, construct_id, **kwargs)
 
+        # Criação de log group do CloudWatch
+        log_group = logs.LogGroup(
+            self,
+            "EasyOrderLogGroup",
+            log_group_name="/ecs/easyorder",
+            retention=logs.RetentionDays.ONE_WEEK,
+            removal_policy=RemovalPolicy.DESTROY,
+        )
+
         # VPC (2 AZs, suficiente para demo)
-        vpc = ec2.Vpc(self, "Vpc", max_azs=2)
+        vpc = ec2.Vpc(
+            self,
+            "Vpc",
+            max_azs=2,
+            nat_gateways=0,
+            subnet_configuration=[
+                ec2.SubnetConfiguration(
+                    name="Public",
+                    subnet_type=ec2.SubnetType.PUBLIC,
+                    cidr_mask=24,
+                )
+            ],
+        )
 
         # ec2_teste = ec2.Instance(self, "Ec2Teste",
         #     instance_type=ec2.InstanceType("t2.micro"),
@@ -49,11 +72,16 @@ class EasyOrderStack(Stack):
             memory_limit_mib=512,
             desired_count=1,
             public_load_balancer=True,
+            task_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
+            assign_public_ip=True,
             task_image_options=(
                 ecs_patterns.ApplicationLoadBalancedTaskImageOptions(
                     image=image,
                     container_port=8000,
                     enable_logging=True,
+                    log_driver=ecs.LogDriver.aws_logs(
+                        stream_prefix="easyorder", log_group=log_group
+                    ),
                 )
             ),
         )

@@ -111,13 +111,15 @@ jobs:
 
       - name: CDK Synth
         working-directory: infra
-        run: cdk synth \
-              -c imageTag="${{ env.IMAGE_TAG }}" \
-              -c bastionAllowedCidr="${{ secrets.BASTION_ALLOWED_CIDR }}"
+        run: |
+          cdk synth \
+            --context imageTag="${{ env.IMAGE_TAG }}" \
+            --context bastionAllowedCidr="${{ secrets.BASTION_ALLOWED_CIDR }}"
 
       - name: Deploy do CDK
         working-directory: infra
-        run: cdk deploy "${{ env.CDK_STACK_NAME }}" \
-              -c imageTag="${{ env.IMAGE_TAG }}" \
-              -c bastionAllowedCidr="${{ secrets.BASTION_ALLOWED_CIDR }}" \
-              --require-approval never
+        run: |
+          cdk deploy "${{ env.CDK_STACK_NAME }}" \
+            --context imageTag="${{ env.IMAGE_TAG }}" \
+            --context bastionAllowedCidr="${{ secrets.BASTION_ALLOWED_CIDR }}" \
+            --require-approval never

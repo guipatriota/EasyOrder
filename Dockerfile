@@ -8,6 +8,9 @@ RUN apt-get update && apt-get install -y \
     git zsh sudo curl vim nodejs npm \
     && useradd -ms /bin/zsh vscode \
     && echo "vscode ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers \
+    && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
+    && unzip awscliv2.zip \
+    && sudo ./aws/install \
     && npm install -g aws-cdk@2 \
     && cdk --version \
     && apt-get clean && rm -rf /var/lib/apt/lists/*

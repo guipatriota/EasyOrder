@@ -29,6 +29,9 @@ jobs:
           aws-session-token:     ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region:            ${{ env.AWS_REGION }}
 
+      - name: Quem sou eu?
+        run: aws sts get-caller-identity
+      
       - name: Ensure ECR repository exists
         run: |
           set -euo pipefail

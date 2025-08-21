@@ -70,6 +70,7 @@ jobs:
           echo "REGISTRY=$REGISTRY" >> "$GITHUB_ENV"
 
   cdk-bootstrap:
+    needs: build-and-push
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -105,7 +106,7 @@ jobs:
             --tags Project=EasyOrder
   
   cdk-deploy:
-    needs: build-and-push
+    needs: cdk-bootstrap
     runs-on: ubuntu-latest
     steps:
       - name: Checkout do código

@@ -68,45 +68,9 @@ jobs:
           docker push "$REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
           docker push "$REGISTRY/$ECR_REPOSITORY:latest"
           echo "REGISTRY=$REGISTRY" >> "$GITHUB_ENV"
-
-  cdk-bootstrap:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Configura credenciais da AWS
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-session-token:     ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-region:            ${{ env.AWS_REGION }}
-
-      - name: Setup Node (CDK CLI)
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Instala CDK
-        run: npm install -g aws-cdk@2
-
-      - name: Get AWS Account ID
-        id: account
-        run: |
-          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-          echo "ACCOUNT_ID=$ACCOUNT_ID" >> $GITHUB_ENV
-      
-      - name: CDK Bootstrap (idempotente)
-        run: |
-          set -euo pipefail
-          cdk bootstrap aws://${{ env.ACCOUNT_ID }}/${{ env.AWS_REGION }} \
-            --toolkit-stack-name CDKToolkit \
-            --tags Project=EasyOrder
   
   cdk-deploy:
-    needs: cdk-bootstrap
+    needs: build-and-push
     runs-on: ubuntu-latest
     steps:
       - name: Checkout do código
@@ -147,17 +111,13 @@ jobs:
 
       - name: CDK Synth
         working-directory: infra
-        run: |
-          set -euo pipefail
-          cdk synth \
-            -c imageTag="${{ env.IMAGE_TAG }}" \
-            -c bastionAllowedCidr="${{ secrets.BASTION_ALLOWED_CIDR }}"
+        run: cdk synth \
+              -c imageTag="${{ env.IMAGE_TAG }}" \
+              -c bastionAllowedCidr="${{ secrets.BASTION_ALLOWED_CIDR }}"
 
       - name: Deploy do CDK
         working-directory: infra
-        run: |
-          set -euo pipefail
-          cdk deploy "${{ env.CDK_STACK_NAME }}" \
-            -c imageTag="${{ env.IMAGE_TAG }}" \
-            -c bastionAllowedCidr="${{ secrets.BASTION_ALLOWED_CIDR }}" \
-            --require-approval never
+        run: cdk deploy "${{ env.CDK_STACK_NAME }}" \
+              -c imageTag="${{ env.IMAGE_TAG }}" \
+              -c bastionAllowedCidr="${{ secrets.BASTION_ALLOWED_CIDR }}" \
+              --require-approval never

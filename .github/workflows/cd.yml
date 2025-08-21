@@ -69,6 +69,41 @@ jobs:
           docker push "$REGISTRY/$ECR_REPOSITORY:latest"
           echo "REGISTRY=$REGISTRY" >> "$GITHUB_ENV"
 
+  cdk-bootstrap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configura credenciais da AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token:     ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region:            ${{ env.AWS_REGION }}
+
+      - name: Setup Node (CDK CLI)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instala CDK
+        run: npm install -g aws-cdk@2
+
+      - name: Get AWS Account ID
+        id: account
+        run: |
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          echo "ACCOUNT_ID=$ACCOUNT_ID" >> $GITHUB_ENV
+      
+      - name: CDK Bootstrap (idempotente)
+        run: |
+          set -euo pipefail
+          cdk bootstrap aws://${{ env.ACCOUNT_ID }}/${{ env.AWS_REGION }} \
+            --toolkit-stack-name CDKToolkit \
+            --tags Project=EasyOrder
+  
   cdk-deploy:
     needs: build-and-push
     runs-on: ubuntu-latest

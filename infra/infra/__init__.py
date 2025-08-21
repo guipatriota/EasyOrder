@@ -1,0 +1,1 @@
+"""Infra com AWS CDK."""

@@ -5,12 +5,13 @@ FROM python:3.12-slim AS dev
 
 # Instalar pacotes úteis para desenvolvimento
 RUN apt-get update && apt-get install -y \
-    git zsh sudo curl vim nodejs npm \
+    git zsh sudo curl vim nodejs npm unzip ca-certificates \
     && useradd -ms /bin/zsh vscode \
     && echo "vscode ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers \
     && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
     && unzip awscliv2.zip \
-    && sudo ./aws/install \
+    && ./aws/install \
+    && rm -rf awscliv2.zip aws \
     && npm install -g aws-cdk@2 \
     && cdk --version \
     && apt-get clean && rm -rf /var/lib/apt/lists/*

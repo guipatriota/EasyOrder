@@ -4,6 +4,9 @@
 **/*.pyc
 venv
 .venv
+.venv/
+**/.venv
+infra/.venv
 .env
 .env.*
 tests

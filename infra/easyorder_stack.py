@@ -1,5 +1,6 @@
 """Configuração da Stack para a infra com AWS CDK."""
 
+# from aws_cdk import aws_ecs_patterns as ecs_patterns
 from aws_cdk import (
     RemovalPolicy,
     Stack,
@@ -7,7 +8,6 @@ from aws_cdk import (
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecr as ecr
 from aws_cdk import aws_ecs as ecs
-from aws_cdk import aws_ecs_patterns as ecs_patterns
 from aws_cdk import aws_logs as logs
 from constructs import Construct
 
@@ -65,34 +65,77 @@ class EasyOrderStack(Stack):
         image = ecs.ContainerImage.from_ecr_repository(repo, tag=image_tag)
 
         # Serviço Fargate com ALB público
-        svc = ecs_patterns.ApplicationLoadBalancedFargateService(
+        # svc = ecs_patterns.ApplicationLoadBalancedFargateService(
+        #     self,
+        #     "Service",
+        #     cluster=cluster,
+        #     cpu=256,
+        #     memory_limit_mib=512,
+        #     desired_count=1,
+        #     public_load_balancer=True,
+        #     task_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
+        #     assign_public_ip=True,
+        #     task_image_options=(
+        #         ecs_patterns.ApplicationLoadBalancedTaskImageOptions(
+        #             image=image,
+        #             container_port=8000,
+        #             enable_logging=True,
+        #             log_driver=ecs.LogDriver.aws_logs(
+        #                 stream_prefix="easyorder", log_group=log_group
+        #             ),
+        #         )
+        #     ),
+        # )
+
+        # Task Definition do ECS sem ALB (menor custo para nossa aula)
+        task_def = ecs.FargateTaskDefinition(
+            self,
+            "TaskDef",
+            cpu=256,
+            memory_limit_mib=512,
+        )
+        container = task_def.add_container(
+            "App",
+            image=image,
+            logging=ecs.LogDriver.aws_logs(
+                stream_prefix="easyorder", log_group=log_group
+            ),
+            environment={
+                # adicione variáveis se precisar
+            },
+        )
+        # Exponha a porta do seu FastAPI
+        container.add_port_mappings(
+            ecs.PortMapping(container_port=8000, protocol=ecs.Protocol.TCP)
+        )
+        # Security Group permitindo acesso externo à porta 8000
+        sg = ec2.SecurityGroup(
+            self, "FargateSG", vpc=vpc, allow_all_outbound=True
+        )
+        sg.add_ingress_rule(
+            ec2.Peer.any_ipv4(),
+            ec2.Port.tcp(8000),
+            "Permitir HTTP (porta 8000) de qualquer lugar",
+        )
+        # Serviço Fargate SEM Load Balancer, com IP público
+        svc = ecs.FargateService(
             self,
             "Service",
             cluster=cluster,
-            cpu=256,
-            memory_limit_mib=512,
+            task_definition=task_def,
             desired_count=1,
-            public_load_balancer=True,
-            task_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
             assign_public_ip=True,
-            task_image_options=(
-                ecs_patterns.ApplicationLoadBalancedTaskImageOptions(
-                    image=image,
-                    container_port=8000,
-                    enable_logging=True,
-                    log_driver=ecs.LogDriver.aws_logs(
-                        stream_prefix="easyorder", log_group=log_group
-                    ),
-                )
-            ),
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
+            security_groups=[sg],
+            enable_execute_command=True,
         )
 
         # Auto scaling (opcional)
-        scalable = svc.service.auto_scale_task_count(
-            min_capacity=1, max_capacity=1
-        )
-        scalable.scale_on_cpu_utilization(
-            "CpuScaling", target_utilization_percent=60
-        )
+        # scalable = svc.service.auto_scale_task_count(
+        #     min_capacity=1, max_capacity=1
+        # )
+        # scalable.scale_on_cpu_utilization(
+        #     "CpuScaling", target_utilization_percent=60
+        # )
         svc.service.minimum_healthy_percent = 100
         svc.service.maximum_percent = 200

@@ -17,7 +17,7 @@ RUN mkdir -p /var/log/supervisor
 
 # Pacotes base (Instala o Supervisor para time de Operações)
 RUN apt-get update && apt-get install -y \
-    curl unzip ca-certificates git zsh sudo vim supervisor \
+    curl unzip ca-certificates git zsh sudo htop vim supervisor \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -94,6 +94,12 @@ FROM python:3.12-slim AS prod
 ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 
+# Pacotes base (Instala o Supervisor para time de Operações)
+RUN apt-get update && apt-get install -y \
+    htop supervisor \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
 # Copia dependências e instala
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
@@ -101,8 +107,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copia apenas código necessário para produção
 COPY src ./src
 
+# Supervisor config
+COPY supervisord.conf /etc/supervisor/supervisord.conf
+
 EXPOSE 8000
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["supervisord", "-c", "/etc/supervisor/supervisord.conf"]
 
 # ---------------------------
 # Stage 3: Test
